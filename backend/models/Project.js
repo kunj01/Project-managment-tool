@@ -11,6 +11,11 @@ const projectSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  status: {
+    type: String,
+    enum: ["Planning", "Active", "On Hold", "Completed"],
+    default: "Planning",
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -26,11 +31,22 @@ const projectSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Add index for better query performance
 projectSchema.index({ createdBy: 1 });
 projectSchema.index({ teamMembers: 1 });
+projectSchema.index({ status: 1 });
+
+// Update the updatedAt field before saving
+projectSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
 const Project = mongoose.model("Project", projectSchema);
 

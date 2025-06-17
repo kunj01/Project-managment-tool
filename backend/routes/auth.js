@@ -114,7 +114,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get current user
+// Get current user - Fix: Return user object directly, not nested
 router.get("/me", async (req, res) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
@@ -129,7 +129,13 @@ router.get("/me", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    // Return user object with consistent structure
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
   } catch (error) {
     res.status(401).json({ message: "Please authenticate" });
   }

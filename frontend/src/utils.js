@@ -8,31 +8,31 @@ export const formatTime = (date) => {
   return new Date(date).toLocaleTimeString();
 };
 
-// Get status color class
+// Get status color class for dark theme
 export const getStatusColor = (status) => {
   switch (status) {
     case "To Do":
-      return "bg-gray-200 text-gray-800";
+      return "bg-gray-600 text-gray-200 border border-gray-500";
     case "In Progress":
-      return "bg-blue-200 text-blue-800";
+      return "bg-blue-600 text-blue-100 border border-blue-500";
     case "Done":
-      return "bg-green-200 text-green-800";
+      return "bg-green-600 text-green-100 border border-green-500";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-600 text-gray-200 border border-gray-500";
   }
 };
 
-// Get priority color class
+// Get priority color class for dark theme
 export const getPriorityColor = (priority) => {
   switch (priority) {
     case "High":
-      return "text-red-600";
+      return "text-red-400";
     case "Medium":
-      return "text-yellow-600";
+      return "text-yellow-400";
     case "Low":
-      return "text-green-600";
+      return "text-green-400";
     default:
-      return "text-gray-600";
+      return "text-gray-400";
   }
 };
 
@@ -47,22 +47,12 @@ export const formatStatus = (status) => {
 // Get auth header
 export const getAuthHeader = () => {
   const token = localStorage.getItem("token");
-  console.log(
-    "getAuthHeader: Retrieved token from localStorage:",
-    token ? "Token found" : "No token"
-  );
-  console.log(
-    "getAuthHeader: Full token value (first 10 chars):",
-    token ? token.substring(0, 10) + "..." : "N/A"
-  );
   if (!token) {
-    console.log("getAuthHeader: No token found, returning empty headers");
     return {};
   }
   const headers = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
-  console.log("getAuthHeader: Returning headers:", JSON.stringify(headers));
   return headers;
 };

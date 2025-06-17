@@ -11,12 +11,14 @@ export const config = {
     LIST: `${API_URL}/projects`,
     CREATE: `${API_URL}/projects`,
     UPDATE: (id) => `${API_URL}/projects/${id}`,
+    UPDATE_STATUS: (id) => `${API_URL}/projects/${id}/status`,
     DELETE: (id) => `${API_URL}/projects/${id}`,
   },
   TASKS: {
     LIST: (projectId) => `${API_URL}/tasks/project/${projectId}`,
     CREATE: `${API_URL}/tasks`,
     UPDATE: (id) => `${API_URL}/tasks/${id}`,
+    UPDATE_STATUS: (id) => `${API_URL}/tasks/${id}/status`,
     DELETE: (id) => `${API_URL}/tasks/${id}`,
     MY_TASKS: `${API_URL}/tasks/my`,
   },
@@ -25,6 +27,7 @@ export const config = {
     CREATE: `${API_URL}/events`,
     UPDATE: (id) => `${API_URL}/events/${id}`,
     DELETE: (id) => `${API_URL}/events/${id}`,
+    RSVP: (id) => `${API_URL}/events/${id}/rsvp`,
   },
   USERS: {
     LIST: `${API_URL}/users`,
