@@ -112,6 +112,20 @@ router.get("/project/:projectId", auth, async (req, res) => {
   }
 });
 
+// Get All Tasks (Project Managers Only)
+router.get("/", auth, checkRole(["project-manager"]), async (req, res) => {
+  try {
+    const tasks = await Task.find({})
+      .populate("assignedTo", "name email")
+      .populate("projectId", "name");
+    res.json(tasks);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching all tasks", error: error.message });
+  }
+});
+
 // Get My Tasks (Tasks assigned to the current user)
 router.get("/my", auth, async (req, res) => {
   try {

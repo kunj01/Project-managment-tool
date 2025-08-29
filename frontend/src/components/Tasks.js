@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContexts";
 import CreateTaskModal from "./CreateTaskModal";
 import { config } from "../config";
 import { getAuthHeader, getStatusColor, getPriorityColor } from "../utils";
@@ -12,6 +12,7 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const fetchTasks = useCallback(async () => {
     if (authLoading || !user) {
@@ -34,8 +35,11 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
           setLoading(false);
           return;
         }
+      } else if (user?.role === "project-manager") {
+        // Project managers can view all tasks
+        url = config.TASKS.ALL_TASKS;
       } else {
-        setError("No project selected or invalid view for tasks.");
+        setError("No project selected or insufficient permissions to view tasks.");
         setLoading(false);
         return;
       }
@@ -69,7 +73,10 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
         taskData,
         { headers: getAuthHeader() }
       );
-      setTasks((prevTasks) => [...prevTasks, response.data]);
+      
+      // Refresh the tasks list to show the new task
+      await fetchTasks();
+      
       setIsModalOpen(false);
       toast.success("Task created successfully!");
     } catch (err) {
@@ -211,9 +218,11 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
             ? "My Tasks"
             : projectId
             ? "Project Tasks"
+            : user?.role === "project-manager"
+            ? "All Tasks"
             : "Tasks"}
         </h2>
-        {user?.role === "project-manager" && projectId && (
+        {user?.role === "project-manager" && (
           <button
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white font-medium rounded-lg hover:from-green-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all duration-200 shadow-lg"
@@ -224,6 +233,7 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
             Create Task
           </button>
         )}
+
       </div>
 
       {tasks.length === 0 ? (
@@ -235,7 +245,11 @@ const Tasks = ({ projectId, isMyTasksView = false }) => {
           <p className="text-gray-500 text-sm mt-2">
             {isMyTasksView 
               ? "You don't have any assigned tasks yet" 
-              : "No tasks have been created for this project"}
+              : projectId
+              ? "No tasks have been created for this project"
+              : user?.role === "project-manager"
+              ? "No tasks have been created yet"
+              : "No tasks found"}
           </p>
         </div>
       ) : (

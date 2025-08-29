@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContexts";
 import { config } from "../config";
 import { getAuthHeader } from "../utils";
 import CreateProjectModal from "./CreateProjectModal";

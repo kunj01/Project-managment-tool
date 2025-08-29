@@ -21,6 +21,7 @@ export const config = {
     UPDATE_STATUS: (id) => `${API_URL}/tasks/${id}/status`,
     DELETE: (id) => `${API_URL}/tasks/${id}`,
     MY_TASKS: `${API_URL}/tasks/my`,
+    ALL_TASKS: `${API_URL}/tasks`,
   },
   EVENTS: {
     LIST: `${API_URL}/events`,

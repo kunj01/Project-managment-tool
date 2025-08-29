@@ -9,38 +9,48 @@ function CreateTaskModal({ isOpen, onClose, onSubmit, projectId }) {
     assignedTo: [],
     dueDate: "",
     priority: "Medium",
+    projectId: projectId || "",
   });
   const [users, setUsers] = useState([]);
   const [projectTeamMembers, setProjectTeamMembers] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProjectAndUsers = async () => {
-      if (!isOpen || !projectId) return;
+    const fetchData = async () => {
+      if (!isOpen) return;
       
       try {
         const token = localStorage.getItem("token");
-        
-        // Fetch project details to get team members
-        const projectResponse = await axios.get(`http://localhost:5000/api/projects/${projectId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
         
         // Fetch all users
         const usersResponse = await axios.get("http://localhost:5000/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
         setUsers(usersResponse.data);
-        setProjectTeamMembers(projectResponse.data.teamMembers || []);
+        
+        if (projectId) {
+          // Fetch project details to get team members
+          const projectResponse = await axios.get(`http://localhost:5000/api/projects/${projectId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setProjectTeamMembers(projectResponse.data.teamMembers || []);
+        } else {
+          // Fetch all projects for project manager to select from
+          const projectsResponse = await axios.get("http://localhost:5000/api/projects", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setProjects(projectsResponse.data);
+          setProjectTeamMembers([]);
+        }
       } catch (err) {
-        setError("Error fetching project details or users");
+        setError("Error fetching data");
         console.error("Error:", err);
       }
     };
 
-    fetchProjectAndUsers();
+    fetchData();
   }, [isOpen, projectId]);
 
   const handleChange = (e) => {
@@ -59,7 +69,7 @@ function CreateTaskModal({ isOpen, onClose, onSubmit, projectId }) {
     try {
       await onSubmit({
         ...formData,
-        projectId: projectId,
+        projectId: formData.projectId || projectId,
       });
       setFormData({
         title: "",
@@ -67,6 +77,7 @@ function CreateTaskModal({ isOpen, onClose, onSubmit, projectId }) {
         assignedTo: [],
         dueDate: "",
         priority: "Medium",
+        projectId: projectId || "",
       });
       onClose();
     } catch (err) {
@@ -76,13 +87,18 @@ function CreateTaskModal({ isOpen, onClose, onSubmit, projectId }) {
     }
   };
 
-  // Get available users for assignment (team members + project creator)
+  // Get available users for assignment (team members + project managers)
   const getAvailableUsers = () => {
-    const teamMemberIds = projectTeamMembers.map(member => member._id);
-    return users.filter(user => 
-      teamMemberIds.includes(user._id) || 
-      user.role === 'project-manager'
-    );
+    if (projectId && projectTeamMembers.length > 0) {
+      const teamMemberIds = projectTeamMembers.map(member => member._id);
+      return users.filter(user => 
+        teamMemberIds.includes(user._id) || 
+        user.role === 'project-manager'
+      );
+    } else {
+      // If no specific project, show all users
+      return users;
+    }
   };
 
   return (
@@ -142,6 +158,32 @@ function CreateTaskModal({ isOpen, onClose, onSubmit, projectId }) {
                 placeholder="Enter task title"
               />
             </div>
+
+            {!projectId && (
+              <div>
+                <label
+                  htmlFor="projectId"
+                  className="block text-sm font-medium text-gray-300 mb-2"
+                >
+                  Project
+                </label>
+                <select
+                  id="projectId"
+                  name="projectId"
+                  value={formData.projectId}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+                >
+                  <option value="">Select a project</option>
+                  {projects.map((project) => (
+                    <option key={project._id} value={project._id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label
